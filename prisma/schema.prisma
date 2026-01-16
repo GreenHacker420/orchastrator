@@ -7,8 +7,149 @@
 generator client {
   provider = "prisma-client-js"
   output   = "../src/generated/prisma"
+  previewFeatures = ["multiSchema"]
 }
 
 datasource db {
   provider = "postgresql"
+  schemas  = ["ShopCore", "ShipStream", "PayGuard", "CareDesk"]
+}
+
+// --- ShopCore ---
+model User {
+  id             Int      @id @default(autoincrement())
+  name           String
+  email          String   @unique
+  premiumStatus  Boolean  @default(false)
+  orders         Order[]
+  
+  @@schema("ShopCore")
+}
+
+model Product {
+  id       Int     @id @default(autoincrement())
+  name     String
+  category String
+  price    Decimal
+  orders   Order[]
+
+  @@schema("ShopCore")
+}
+
+model Order {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  productId  Int
+  orderDate  DateTime @default(now())
+  status     String
+  
+  user       User     @relation(fields: [userId], references: [id])
+  product    Product  @relation(fields: [productId], references: [id])
+
+  @@schema("ShopCore")
+}
+
+// --- ShipStream ---
+model Shipment {
+  id               Int      @id @default(autoincrement())
+  orderId          Int      // External link to ShopCore.Order
+  trackingNumber   String   @unique
+  estimatedArrival DateTime
+  trackingEvents   TrackingEvent[]
+
+  @@schema("ShipStream")
+}
+
+model Warehouse {
+  id             Int      @id @default(autoincrement())
+  location       String
+  managerName    String
+  trackingEvents TrackingEvent[]
+
+  @@schema("ShipStream")
+}
+
+model TrackingEvent {
+  id           Int      @id @default(autoincrement())
+  shipmentId   Int
+  warehouseId  Int
+  timestamp    DateTime @default(now())
+  statusUpdate String
+
+  shipment     Shipment  @relation(fields: [shipmentId], references: [id])
+  warehouse    Warehouse @relation(fields: [warehouseId], references: [id])
+
+  @@schema("ShipStream")
+}
+
+// --- PayGuard ---
+model Wallet {
+  id             Int             @id @default(autoincrement())
+  userId         Int             @unique // External link to ShopCore.User
+  balance        Decimal
+  currency       String          @default("USD")
+  transactions   Transaction[]
+  paymentMethods PaymentMethod[]
+
+  @@schema("PayGuard")
+}
+
+model Transaction {
+  id        Int      @id @default(autoincrement())
+  walletId  Int
+  orderId   Int      // External link to ShopCore.Order
+  amount    Decimal
+  type      String   // Credit, Debit, Refund
+  timestamp DateTime @default(now())
+
+  wallet    Wallet   @relation(fields: [walletId], references: [id])
+
+  @@schema("PayGuard")
+}
+
+model PaymentMethod {
+  id         Int      @id @default(autoincrement())
+  walletId   Int
+  provider   String
+  expiryDate DateTime
+
+  wallet     Wallet   @relation(fields: [walletId], references: [id])
+
+  @@schema("PayGuard")
+}
+
+// --- CareDesk ---
+model Ticket {
+  id           Int             @id @default(autoincrement())
+  userId       Int             // External link to ShopCore.User
+  referenceId  Int             // Can be OrderID or TransactionID
+  issueType    String
+  status       String          @default("Open")
+  messages     TicketMessage[]
+  surveys      SatisfactionSurvey[]
+
+  @@schema("CareDesk")
+}
+
+model TicketMessage {
+  id        Int      @id @default(autoincrement())
+  ticketId  Int
+  sender    String   // User or Agent
+  content   String
+  timestamp DateTime @default(now())
+
+  ticket    Ticket   @relation(fields: [ticketId], references: [id])
+
+  @@schema("CareDesk")
+}
+
+model SatisfactionSurvey {
+  id       Int    @id @default(autoincrement())
+  ticketId Int
+  rating   Int
+  comments String?
+
+  ticket   Ticket @relation(fields: [ticketId], references: [id])
+
+  @@schema("CareDesk")
 }
