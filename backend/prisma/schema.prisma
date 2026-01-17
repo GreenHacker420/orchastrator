@@ -1,19 +1,15 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
-  previewFeatures = ["multiSchema"]
+  output   = "../generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
-  schemas  = ["ShopCore", "ShipStream", "PayGuard", "CareDesk"]
 }
+
 
 // --- ShopCore ---
 model User {
@@ -22,8 +18,6 @@ model User {
   email          String   @unique
   premiumStatus  Boolean  @default(false)
   orders         Order[]
-  
-  @@schema("ShopCore")
 }
 
 model Product {
@@ -32,8 +26,6 @@ model Product {
   category String
   price    Decimal
   orders   Order[]
-
-  @@schema("ShopCore")
 }
 
 model Order {
@@ -45,8 +37,6 @@ model Order {
   
   user       User     @relation(fields: [userId], references: [id])
   product    Product  @relation(fields: [productId], references: [id])
-
-  @@schema("ShopCore")
 }
 
 // --- ShipStream ---
@@ -56,8 +46,6 @@ model Shipment {
   trackingNumber   String   @unique
   estimatedArrival DateTime
   trackingEvents   TrackingEvent[]
-
-  @@schema("ShipStream")
 }
 
 model Warehouse {
@@ -65,8 +53,6 @@ model Warehouse {
   location       String
   managerName    String
   trackingEvents TrackingEvent[]
-
-  @@schema("ShipStream")
 }
 
 model TrackingEvent {
@@ -78,8 +64,6 @@ model TrackingEvent {
 
   shipment     Shipment  @relation(fields: [shipmentId], references: [id])
   warehouse    Warehouse @relation(fields: [warehouseId], references: [id])
-
-  @@schema("ShipStream")
 }
 
 // --- PayGuard ---
@@ -90,8 +74,6 @@ model Wallet {
   currency       String          @default("USD")
   transactions   Transaction[]
   paymentMethods PaymentMethod[]
-
-  @@schema("PayGuard")
 }
 
 model Transaction {
@@ -103,8 +85,6 @@ model Transaction {
   timestamp DateTime @default(now())
 
   wallet    Wallet   @relation(fields: [walletId], references: [id])
-
-  @@schema("PayGuard")
 }
 
 model PaymentMethod {
@@ -114,8 +94,6 @@ model PaymentMethod {
   expiryDate DateTime
 
   wallet     Wallet   @relation(fields: [walletId], references: [id])
-
-  @@schema("PayGuard")
 }
 
 // --- CareDesk ---
@@ -127,8 +105,6 @@ model Ticket {
   status       String          @default("Open")
   messages     TicketMessage[]
   surveys      SatisfactionSurvey[]
-
-  @@schema("CareDesk")
 }
 
 model TicketMessage {
@@ -139,8 +115,6 @@ model TicketMessage {
   timestamp DateTime @default(now())
 
   ticket    Ticket   @relation(fields: [ticketId], references: [id])
-
-  @@schema("CareDesk")
 }
 
 model SatisfactionSurvey {
@@ -150,6 +124,4 @@ model SatisfactionSurvey {
   comments String?
 
   ticket   Ticket @relation(fields: [ticketId], references: [id])
-
-  @@schema("CareDesk")
 }

@@ -1,0 +1,126 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// --- ShopCore ---
+model User {
+  id            Int     @id @default(autoincrement())
+  name          String
+  email         String  @unique
+  premiumStatus Boolean @default(false)
+  orders        Order[]
+}
+
+model Product {
+  id       Int     @id @default(autoincrement())
+  name     String
+  category String
+  price    Decimal
+  orders   Order[]
+}
+
+model Order {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  productId Int
+  orderDate DateTime @default(now())
+  status    String
+
+  user    User    @relation(fields: [userId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+}
+
+// --- ShipStream ---
+model Shipment {
+  id               Int             @id @default(autoincrement())
+  orderId          Int // External link to ShopCore.Order
+  trackingNumber   String          @unique
+  estimatedArrival DateTime
+  trackingEvents   TrackingEvent[]
+}
+
+model Warehouse {
+  id             Int             @id @default(autoincrement())
+  location       String
+  managerName    String
+  trackingEvents TrackingEvent[]
+}
+
+model TrackingEvent {
+  id           Int      @id @default(autoincrement())
+  shipmentId   Int
+  warehouseId  Int
+  timestamp    DateTime @default(now())
+  statusUpdate String
+
+  shipment  Shipment  @relation(fields: [shipmentId], references: [id])
+  warehouse Warehouse @relation(fields: [warehouseId], references: [id])
+}
+
+// --- PayGuard ---
+model Wallet {
+  id             Int             @id @default(autoincrement())
+  userId         Int             @unique // External link to ShopCore.User
+  balance        Decimal
+  currency       String          @default("USD")
+  transactions   Transaction[]
+  paymentMethods PaymentMethod[]
+}
+
+model Transaction {
+  id        Int      @id @default(autoincrement())
+  walletId  Int
+  orderId   Int // External link to ShopCore.Order
+  amount    Decimal
+  type      String // Credit, Debit, Refund
+  timestamp DateTime @default(now())
+
+  wallet Wallet @relation(fields: [walletId], references: [id])
+}
+
+model PaymentMethod {
+  id         Int      @id @default(autoincrement())
+  walletId   Int
+  provider   String
+  expiryDate DateTime
+
+  wallet Wallet @relation(fields: [walletId], references: [id])
+}
+
+// --- CareDesk ---
+model Ticket {
+  id          Int                  @id @default(autoincrement())
+  userId      Int // External link to ShopCore.User
+  referenceId Int // Can be OrderID or TransactionID
+  issueType   String
+  status      String               @default("Open")
+  messages    TicketMessage[]
+  surveys     SatisfactionSurvey[]
+}
+
+model TicketMessage {
+  id        Int      @id @default(autoincrement())
+  ticketId  Int
+  sender    String // User or Agent
+  content   String
+  timestamp DateTime @default(now())
+
+  ticket Ticket @relation(fields: [ticketId], references: [id])
+}
+
+model SatisfactionSurvey {
+  id       Int     @id @default(autoincrement())
+  ticketId Int
+  rating   Int
+  comments String?
+
+  ticket Ticket @relation(fields: [ticketId], references: [id])
+}
