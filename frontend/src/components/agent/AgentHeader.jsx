@@ -1,4 +1,3 @@
-import React from 'react';
 import { Terminal, Activity, Wifi, WifiOff } from 'lucide-react';
 import { CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -21,7 +20,8 @@ export function AgentHeader({ isConnected, isGeminiConnected }) {
                         </CardDescription>
                     </div>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 items-center">
+
                     <Badge variant={isConnected ? "outline" : "destructive"} className="gap-1.5 transition-colors">
                         {isConnected ? <Wifi className="w-3 h-3 text-green-500" /> : <WifiOff className="w-3 h-3" />}
                         {isConnected ? "Connected" : "Offline"}

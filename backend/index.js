@@ -23,6 +23,9 @@ app.get("/", (req, res) => {
     res.send("Server is Running");
 });
 
+import debugRoutes from "./src/routes/debugRoutes.js";
+app.use("/api/debug", debugRoutes);
+
 io.on("connection", (socket) => {
     console.log("Client connected:", socket.id);
     setupMainAgent(socket);

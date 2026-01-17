@@ -1,9 +1,10 @@
-import React from 'react';
-import { Mic, MicOff, Volume2, Send } from 'lucide-react';
+import { useState } from 'react';
+import { Mic, MicOff, Volume2, Send, FileJson } from 'lucide-react';
 import { CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import { DebugInfo } from '@/components/debug/DebugInfo';
 
 export function AgentControls({
     isConnected,
@@ -14,6 +15,7 @@ export function AgentControls({
     toggleRecording,
     volume
 }) {
+    const [showDebug, setShowDebug] = useState(false);
     return (
         <CardFooter className="flex-none bg-zinc-50/80 dark:bg-zinc-900/40 p-6 border-t border-zinc-100 dark:border-zinc-800 rounded-b-xl flex flex-col gap-4">
 
@@ -43,14 +45,27 @@ export function AgentControls({
 
             {/* Mic & Status */}
             <div className="flex justify-between items-center w-full pt-2">
-                <div className="flex items-center gap-3 px-3 py-1.5 bg-zinc-100/50 dark:bg-zinc-800/50 rounded-full">
-                    <Volume2 className={cn("w-3.5 h-3.5 transition-colors", volume > 5 ? "text-emerald-500" : "text-zinc-400")} />
-                    <div className="w-24 h-1.5 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
-                        <div
-                            className="h-full bg-emerald-500 transition-all duration-100 ease-out"
-                            style={{ width: `${Math.min(100, volume)}%` }}
-                        />
+                <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3 px-3 py-1.5 bg-zinc-100/50 dark:bg-zinc-800/50 rounded-full h-8">
+                        <Volume2 className={cn("w-3.5 h-3.5 transition-colors", volume > 5 ? "text-emerald-500" : "text-zinc-400")} />
+                        <div className="w-20 h-1.5 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
+                            <div
+                                className="h-full bg-emerald-500 transition-all duration-100 ease-out"
+                                style={{ width: `${Math.min(100, volume)}%` }}
+                            />
+                        </div>
                     </div>
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setShowDebug(true)}
+                        className="text-xs font-medium text-zinc-500 dark:text-zinc-400 gap-1.5 h-8 px-2"
+                        title="View Mock Data"
+                    >
+                        <FileJson className="w-4 h-4" />
+                        Mock Data
+                    </Button>
+
                 </div>
 
                 <Button
@@ -76,6 +91,7 @@ export function AgentControls({
                     )}
                 </Button>
             </div>
+            {showDebug && <DebugInfo onClose={() => setShowDebug(false)} />}
         </CardFooter>
     );
 }
