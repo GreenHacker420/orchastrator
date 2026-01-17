@@ -13,15 +13,22 @@ async function runPrismaAgent(domain, naturalQuery, schemaContext) {
     Database Schema (Prisma Models):
     ${schemaContext}
     
-    GOAL: Convert the natural language query into a *valid Prisma Client query object* in JSON format.
+    # MISSION
+    Convert the user's natural language query into a *precise, valid Prisma Client query object* in JSON format.
     
-    RULES:
-    1. Output MUST be valid JSON only. No markdown, no explanations.
-    2. Structure: { "model": "ModelName", "method": "findMany" | "findUnique" | "findFirst" | "count", "args": { ... } }
-    3. Use standard Prisma arguments: where, include, orderBy, take, skip.
-    4. Do not invent fields. Use only fields defined in the schema.
-    5. Security: Read-only access only. No create/update/delete.
+    # RULES
+    1. **Output Format**: STRICT JSON only. NO markdown blocks (e.g., \`\`\`json). NO commentary.
+    2. **Structure**: { "model": "ModelName", "method": "findMany" | "findUnique" | "count", "args": { ... } }
+    3. **Validation**: 
+       - Use ONLY fields defined in the provided schema. 
+       - Do NOT hallucinate relationships or fields.
+       - "contains" filters are case-insensitive by default in many Prisma setups, but prefer \`mode: 'insensitive'\` if searching text.
+    4. **Security**: Read-only access.
     
+    # EXAMPLE
+    User: "Find all orders for user 123"
+    JSON: { "model": "Order", "method": "findMany", "args": { "where": { "userId": 123 }, "include": { "products": true } } }
+
     User Query: "${naturalQuery}"
   `;
 
