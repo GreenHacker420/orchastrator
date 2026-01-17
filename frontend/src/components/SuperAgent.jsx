@@ -32,7 +32,7 @@ export function SuperAgent() {
 
   // --- Socket Initialization ---
   useEffect(() => {
-    const socket = io('http://localhost:5050');
+    const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:5050');
     socketRef.current = socket;
 
     socket.on('connect', () => {
